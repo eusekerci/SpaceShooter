@@ -28,6 +28,7 @@ public class CharacterMovement : MonoBehaviour {
         //Debug.Log(res.x + " " + res.y + " "+ res.z);
         //transform.LookAt(res);
 
+        //We can do it with just trigonometry later
         RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         Physics.Raycast(ray, out hit);
@@ -39,12 +40,25 @@ public class CharacterMovement : MonoBehaviour {
 
     private void Move()
     {
-        if (Input.GetKey(KeyCode.W))
+        float inputX = Input.GetAxis("Horizontal");
+        float inputY = Input.GetAxis("Vertical");
+
+        if (Mathf.Abs(inputX) > 0.01f || Mathf.Abs(inputY) > 0.01f)
         {
+            //Angle between inputs
+            float angle = Mathf.Atan2(-1 * inputX, inputY) * Mathf.Rad2Deg;
+           
+            //If we want to move depends on where player looks
+            //Vector3 vector = Quaternion.AngleAxis(angle, World.PlayerGravityDirection) * transform.forward;
+
+            //If we want to move depends on screen positions
+            Vector3 vector = Quaternion.AngleAxis(angle, World.PlayerGravityDirection) * Camera.main.transform.up;
+
             //Cross Product
-            Vector3 rotationAxis = new Vector3(transform.forward.y * World.PlayerGravityDirection.z - transform.forward.z * World.PlayerGravityDirection.y,
-                                                transform.forward.z * World.PlayerGravityDirection.x - transform.forward.x * World.PlayerGravityDirection.z,
-                                                transform.forward.x * World.PlayerGravityDirection.y - transform.forward.y * World.PlayerGravityDirection.x).normalized;
+            Vector3 rotationAxis = new Vector3(
+                vector.y * World.PlayerGravityDirection.z - vector.z * World.PlayerGravityDirection.y,
+                vector.z * World.PlayerGravityDirection.x - vector.x * World.PlayerGravityDirection.z,
+                vector.x * World.PlayerGravityDirection.y - vector.y * World.PlayerGravityDirection.x).normalized;
 
             transform.RotateAround(World.Center, rotationAxis, MovementSpeed);
         }
